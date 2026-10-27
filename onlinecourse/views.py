@@ -226,10 +226,10 @@ def show_exam_result(request, course_id, submission_id):
     questions = course.question_set.all()
 
     for question in questions:
-        possible_score += question.grade
-
-        if question.is_get_score(selected_ids):
-            total_score += question.grade
+        possible_score += question.question_point
+        
+        if question.is_get_grade(selected_ids):
+            total_score += question.question_point
 
     if possible_score > 0:
         grade = (total_score / possible_score) * 100
