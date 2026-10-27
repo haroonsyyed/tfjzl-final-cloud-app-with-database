@@ -58,7 +58,11 @@ class Learner(models.Model):
 
 # Course model
 class Course(models.Model):
-    name = models.CharField(null=False, max_length=30, default='online course')
+    name = models.CharField(
+        null=False,
+        max_length=30,
+        default='online course'
+    )
     image = models.ImageField(upload_to='course_images/')
     description = models.CharField(max_length=1000)
     pub_date = models.DateField(null=True)
@@ -95,10 +99,17 @@ class Enrollment(models.Model):
         (BETA, 'BETA')
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     date_enrolled = models.DateField(default=now)
-    mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
+    mode = models.CharField(
+        max_length=5,
+        choices=COURSE_MODES,
+        default=AUDIT
+    )
     rating = models.FloatField(default=5.0)
 
 
@@ -107,28 +118,32 @@ class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     lessons = models.ManyToManyField(Lesson)
     question_text = models.CharField(max_length=500)
-    question_point = models.IntegerField(default=1)
+    grade = models.IntegerField(default=1)
 
     def __str__(self):
         return self.question_text
 
-    def is_get_grade(self, selected_ids):
-        all_answers = self.choice_set.filter(is_correct=True).count()
-        selected_correct = self.choice_set.filter(
-            is_correct=True,
-            id__in=selected_ids
-        ).count()
+    def is_get_score(self, selected_ids):
+        correct_ids = set(
+            self.choice_set.filter(is_correct=True)
+            .values_list('id', flat=True)
+        )
 
-        if all_answers == selected_correct:
-            return True
-        else:
-            return False
+        selected_question_ids = set(
+            self.choice_set.filter(id__in=selected_ids)
+            .values_list('id', flat=True)
+        )
+
+        return correct_ids == selected_question_ids
 
 
 # Choice model
 class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE
+    )
+    choice_text = models.CharField(max_length=100)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
@@ -137,8 +152,11 @@ class Choice(models.Model):
 
 # Submission model
 class Submission(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    enrollment = models.ForeignKey(
+        Enrollment,
+        on_delete=models.CASCADE
+    )
     choices = models.ManyToManyField(Choice)
 
     def __str__(self):
-        return f"Submission {self.id} - {self.enrollment.user.username}"
+        return f"Submission {self.id}"

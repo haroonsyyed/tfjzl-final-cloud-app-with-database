@@ -65,7 +65,10 @@ def login_request(request):
         username = request.POST['username']
         password = request.POST['psw']
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(
+            username=username,
+            password=password
+        )
 
         if user is not None:
             login(request, user)
@@ -114,11 +117,16 @@ class CourseListView(generic.ListView):
 
     def get_queryset(self):
         user = self.request.user
-        courses = Course.objects.order_by('-total_enrollment')[:10]
+        courses = Course.objects.order_by(
+            '-total_enrollment'
+        )[:10]
 
         for course in courses:
             if user.is_authenticated:
-                course.is_enrolled = check_if_enrolled(user, course)
+                course.is_enrolled = check_if_enrolled(
+                    user,
+                    course
+                )
 
         return courses
 
@@ -218,7 +226,9 @@ def show_exam_result(request, course_id, submission_id):
     )
 
     choices = submission.choices.all()
-    selected_ids = list(choices.values_list('id', flat=True))
+    selected_ids = list(
+        choices.values_list('id', flat=True)
+    )
 
     total_score = 0
     possible_score = 0
@@ -226,10 +236,10 @@ def show_exam_result(request, course_id, submission_id):
     questions = course.question_set.all()
 
     for question in questions:
-        possible_score += question.question_point
-        
-        if question.is_get_grade(selected_ids):
-            total_score += question.question_point
+        possible_score += question.grade
+
+        if question.is_get_score(selected_ids):
+            total_score += question.grade
 
     if possible_score > 0:
         grade = (total_score / possible_score) * 100
